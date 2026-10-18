@@ -1,11 +1,11 @@
-import {FractalRenderer, PALETTES, SCENES, GEOMETRIES} from './engine.js?v=3';
-import {InfiniteCamera} from './navigation.js?v=3';
-import {dynamics} from './fractal-math.js?v=3';
+import {FractalRenderer, PALETTES, SCENES, GEOMETRIES} from './engine.js?v=5';
+import {InfiniteCamera} from './navigation.js?v=5';
+import {dynamics} from './fractal-math.js?v=5';
 
 const $=id=>document.getElementById(id);
 const canvas=$('fractal');
 const settings={detail:220,emblem:SCENES[0].emblem,relief:65,palette:0,type:0,c:[...SCENES[0].c],phase:0,speed:1,rotate:false};
-const camera=new InfiniteCamera(SCENES[0].center,SCENES[0].scale,SCENES[0].angle);
+const camera=new InfiniteCamera(SCENES[0].center,SCENES[0].scale,SCENES[0].angle,dynamics(settings.type,settings.c));
 let renderer,exportRenderer,sceneIndex=0,format='16:9',playing=false,dirty=true;
 let lastTime=0,recording=null,toastTimer,renderAvailable=false;
 
@@ -13,13 +13,13 @@ function toast(message){$('toast').textContent=message;$('toast').classList.add(
 function segmented(id,value){document.querySelectorAll('#'+id+' button').forEach(b=>{const on=b.dataset.value===String(value);b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on));});}
 function syncSliders(){for(const id of ['detail','emblem','relief','speed']){const input=$(id);input.value=settings[id];input.style.setProperty('--fill',((input.value-input.min)/(input.max-input.min)*100)+'%');$(id+'Value').textContent=id==='detail'?settings[id]:id==='speed'?settings[id].toFixed(1)+'×':settings[id]+'%';} $('rotate').checked=settings.rotate;}
 function syncPalette(){document.querySelectorAll('.palette').forEach((b,i)=>{b.classList.toggle('selected',i===settings.palette);b.setAttribute('aria-pressed',String(i===settings.palette));});$('paletteName').textContent=PALETTES[settings.palette].name;}
-function syncScene(){document.querySelectorAll('.scene').forEach((b,i)=>{b.classList.toggle('selected',i===sceneIndex);b.setAttribute('aria-pressed',String(i===sceneIndex));});const s=SCENES[sceneIndex];$('sceneName').textContent=String(sceneIndex+1).padStart(2,'0')+' — '+s.name.toUpperCase();document.querySelector('.scenes-section .mono').textContent=String(sceneIndex+1).padStart(2,'0')+' / '+SCENES.length;const threeD=settings.type>=8;$('geometryNote').textContent=threeD?'Объём · свет и перспектива':'Julia · самоподобные ветви';}
+function syncScene(){document.querySelectorAll('.scene').forEach((b,i)=>{b.classList.toggle('selected',i===sceneIndex);b.setAttribute('aria-pressed',String(i===sceneIndex));});const s=SCENES[sceneIndex];$('sceneName').textContent=String(sceneIndex+1).padStart(2,'0')+' — '+s.name.toUpperCase();document.querySelector('.scenes-section .mono').textContent=String(sceneIndex+1).padStart(2,'0')+' / '+SCENES.length;const threeD=settings.type>=8;$('geometryNote').textContent=threeD?'Объём · свет и перспектива':'Бесшовный узор · вложенный повтор';}
 function syncPlay(){const b=$('playButton');b.classList.toggle('playing',playing);b.querySelector('use').setAttribute('href',playing?'#pause':'#play');b.querySelector('span').textContent=playing?'Пауза':'Начать полёт';b.setAttribute('aria-label',playing?'Остановить полёт':'Запустить полёт');b.setAttribute('aria-pressed',String(playing));}
 function setPlaying(value){playing=value;syncPlay();dirty=true;}
 function resetCamera(){const s=SCENES[sceneIndex];camera.reset(s.center,s.scale,s.angle,dynamics(settings.type,settings.c));dirty=true;}
 function selectScene(index){sceneIndex=index;const s=SCENES[index];Object.assign(settings,{palette:s.palette,c:[...s.c],type:s.type,emblem:s.emblem,phase:0});resetCamera();syncScene();syncPalette();syncSliders();$('fractalType').value=String(settings.type);resize();}
 function makeUI(){
-  SCENES.forEach((s,i)=>{const b=document.createElement('button');b.className='scene';b.title=s.description;b.innerHTML=`<img src="previews/${String(i+1).padStart(2,'0')}.jpg?v=3" alt="Фрактал ${s.name}" width="256" height="144"><span class="scene-info"><strong>${s.name.toUpperCase()}</strong><span>${s.type>=8?'3D':String(i+1).padStart(2,'0')}</span></span>`;b.addEventListener('click',()=>selectScene(i));$('scenes').append(b);});
+  SCENES.forEach((s,i)=>{const b=document.createElement('button');b.className='scene';b.title=s.description;b.innerHTML=`<img src="previews/${String(i+1).padStart(2,'0')}.jpg?v=5" alt="Фрактал ${s.name}" width="256" height="144"><span class="scene-info"><strong>${s.name.toUpperCase()}</strong><span>${s.type>=8?'3D':String(i+1).padStart(2,'0')}</span></span>`;b.addEventListener('click',()=>selectScene(i));$('scenes').append(b);});
   PALETTES.forEach((p,i)=>{const b=document.createElement('button');b.className='palette';b.title=p.name;b.setAttribute('aria-label','Палитра '+p.name);p.swatches.forEach(c=>{const sw=document.createElement('i');sw.style.background=c;b.append(sw);});b.addEventListener('click',()=>{settings.palette=i;syncPalette();dirty=true;});$('palettes').append(b);});
   GEOMETRIES.forEach((name,i)=>{const option=document.createElement('option');option.value=i;option.textContent=name;$('fractalType').append(option);});
   syncScene();syncPalette();syncSliders();syncPlay();
@@ -27,9 +27,7 @@ function makeUI(){
 function resize(){if(!renderer)return;const viewport=$('viewport'),wrap=$('canvasWrap');if(!document.fullscreenElement){const [a,b]=format.split(':').map(Number),ratio=a/b;let availableWidth=viewport.clientWidth,availableHeight=viewport.clientHeight;if(window.innerWidth<=800)availableHeight=format==='9:16'?window.innerHeight*.57:availableWidth/ratio;const width=Math.min(availableWidth,availableHeight*ratio);wrap.style.width=width+'px';wrap.style.height=width/ratio+'px';}const bounds=canvas.getBoundingClientRect();const dpr=Math.min(window.devicePixelRatio||1,1.75);const maxPixels=settings.type>=8?480000:1500000;const scale=Math.min(dpr,Math.sqrt(maxPixels/Math.max(1,bounds.width*bounds.height)));const w=Math.max(1,Math.round(bounds.width*scale)),h=Math.max(1,Math.round(bounds.height*scale));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;dirty=true;}}
 function outputSize(max){const [a,b]=format.split(':').map(Number);return a>=b?[max,Math.round(max*b/a)]:[Math.round(max*a/b),max];}
 function getExportRenderer(){if(!exportRenderer)exportRenderer=new FractalRenderer(document.createElement('canvas'));return exportRenderer;}
-function screenAt(clientX,clientY){const r=canvas.getBoundingClientRect();return[((clientX-r.left)/r.width*2-1)*(r.width/r.height),1-(clientY-r.top)/r.height*2];}
-function zoomAt(factor,x,y){if(recording)return;camera.zoom(factor,screenAt(x,y));dirty=true;}
-function zoomCenter(factor){const r=canvas.getBoundingClientRect();zoomAt(factor,r.left+r.width/2,r.top+r.height/2);}
+function zoomCenter(factor){if(recording)return;camera.zoom(factor);dirty=true;}
 function animate(time){
   requestAnimationFrame(animate);if(!renderAvailable||document.hidden){lastTime=time;return;}
   const dt=Math.min((time-lastTime)/1000,.06);lastTime=time;
@@ -41,13 +39,13 @@ function animate(time){
   if(dirty){renderer.render(settings,camera);$('zoomValue').textContent=camera.zoomLabel;dirty=false;}
   if(recording){const elapsed=performance.now()-recording.start;$('recordingTime').textContent=`00:${String(Math.min(10,Math.floor(elapsed/1000))).padStart(2,'0')} / 00:10`;recording.renderer.render(recording.settings,camera);}
 }
-const pointers=new Map();let drag=null,pinch=null;
-canvas.addEventListener('pointerdown',e=>{if(recording)return;canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,[e.clientX,e.clientY]);setPlaying(false);if(pointers.size===1)drag=[e.clientX,e.clientY];if(pointers.size===2){const p=[...pointers.values()];pinch={distance:Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1])};drag=null;}});
-canvas.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,[e.clientX,e.clientY]);if(pointers.size===2&&pinch){const p=[...pointers.values()],distance=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]);zoomAt(pinch.distance/Math.max(1,distance),(p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2);pinch.distance=distance;}else if(drag&&pointers.size===1){const r=canvas.getBoundingClientRect(),delta=camera.offset((drag[0]-e.clientX)/r.height*2,(e.clientY-drag[1])/r.height*2);camera.pan(...delta);drag=[e.clientX,e.clientY];dirty=true;}});
-function endPointer(e){pointers.delete(e.pointerId);drag=null;pinch=null;}
+const pointers=new Map();let pinchDistance=0;
+canvas.addEventListener('pointerdown',e=>{if(recording||e.pointerType!=='touch')return;canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,[e.clientX,e.clientY]);if(pointers.size===2){const p=[...pointers.values()];pinchDistance=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]);setPlaying(false);}});
+canvas.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,[e.clientX,e.clientY]);if(pointers.size===2&&pinchDistance){const p=[...pointers.values()],distance=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]);zoomCenter(pinchDistance/Math.max(1,distance));pinchDistance=distance;}});
+function endPointer(e){pointers.delete(e.pointerId);pinchDistance=0;}
 canvas.addEventListener('pointerup',endPointer);canvas.addEventListener('pointercancel',endPointer);canvas.addEventListener('lostpointercapture',endPointer);
-canvas.addEventListener('wheel',e=>{e.preventDefault();setPlaying(false);zoomAt(Math.exp(Math.max(-150,Math.min(150,e.deltaY))*.0015),e.clientX,e.clientY);},{passive:false});
-canvas.addEventListener('dblclick',e=>zoomAt(.5,e.clientX,e.clientY));
+canvas.addEventListener('wheel',e=>{e.preventDefault();if(recording)return;setPlaying(false);zoomCenter(Math.exp(Math.max(-150,Math.min(150,e.deltaY))*.0015));},{passive:false});
+canvas.addEventListener('dblclick',()=>zoomCenter(.5));
 
 for(const id of ['detail','emblem','relief','speed'])$(id).addEventListener('input',e=>{settings[id]=Number(e.target.value);syncSliders();dirty=true;});
 $('rotate').addEventListener('change',e=>settings.rotate=e.target.checked);

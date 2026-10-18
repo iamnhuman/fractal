@@ -24,7 +24,7 @@
   <meta name="twitter:image" content="https://iamnhuman.github.io/fractal/preview.jpg">
   <link rel="canonical" href="https://iamnhuman.github.io/fractal/">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -49,7 +49,7 @@
     <div class="intro"><div class="eyebrow"><span class="red-line"></span>GENERATIVE EXPLORER</div><h1>Бесконечно<br>глубже<span>.</span></h1><p>Выбери мир. Приближайся к деталям.<br>Собери свой маршрут.</p></div>
     <section class="section scenes-section"><div class="section-heading"><h2>Отправная точка</h2><span class="mono">01 / 10</span></div><div id="scenes" class="scenes"></div></section>
     <section class="section"><div class="section-heading"><h2>Геометрия</h2><span class="tiny-label">FORM</span></div>
-      <label class="sr-only" for="fractalType">Тип фрактала</label><select id="fractalType" class="geometry-select"></select><p id="geometryNote" class="geometry-note">Julia · самоподобные ветви</p>
+      <label class="sr-only" for="fractalType">Тип фрактала</label><select id="fractalType" class="geometry-select"></select><p id="geometryNote" class="geometry-note">Бесшовный узор · вложенный повтор</p>
       <label class="slider-label" for="detail">Детализация<output id="detailValue">220</output></label><input id="detail" type="range" min="80" max="360" step="10" value="220">
       <label class="slider-label" for="emblem">Овальные мотивы<output id="emblemValue">70%</output></label><input id="emblem" type="range" min="0" max="100" value="70">
       <label class="slider-label" for="relief">Рельеф<output id="reliefValue">65%</output></label><input id="relief" type="range" min="0" max="100" value="65">
@@ -65,17 +65,17 @@
   <section class="studio" aria-label="Редактор фрактала">
     <div class="studio-heading"><div><span class="live-dot"></span><span id="renderStatus">LIVE RENDER</span><span class="heading-divider">/</span><span id="sceneName">01 — SIGNATURE</span></div><div class="format-control" id="formats" aria-label="Формат кадра"><button data-value="16:9" class="selected" aria-pressed="true">16:9</button><button data-value="9:16" aria-pressed="false">9:16</button><button data-value="1:1" aria-pressed="false">1:1</button></div></div>
     <div class="viewport" id="viewport"><div class="canvas-wrap" id="canvasWrap">
-      <canvas id="fractal" aria-label="Интерактивный фрактал. Перетаскивай для перемещения, используй колесо для приближения."></canvas>
+      <canvas id="fractal" aria-label="Бесшовный фрактальный зум. Используй колесо для приближения к центру узора."></canvas>
       <div class="frame-top"><button id="fullscreen" class="frame-icon" aria-label="Полный экран"><svg><use href="#expand"/></svg></button></div>
       <div class="canvas-error" id="canvasError" hidden><h2>Нужен WebGL</h2><p>Открой генератор в браузере с включённым аппаратным ускорением.</p></div>
       <div class="recording-badge" id="recordingBadge" hidden><span></span><span id="recordingTime">00:00 / 00:10</span></div>
     </div></div>
     <div class="transport"><div class="transport-left"><button id="playButton" class="play-button" aria-label="Запустить полёт"><svg><use href="#play"/></svg><span>Начать полёт</span></button><button id="resetButton" class="icon-button" aria-label="Вернуться к исходному виду"><svg><use href="#reset"/></svg></button><div class="transport-divider"></div><span class="zoom-readout">ZOOM <strong id="zoomValue">1.00×</strong></span></div><div class="zoom-buttons"><button id="zoomOut" class="icon-button" aria-label="Отдалить"><svg><use href="#minus"/></svg></button><button id="zoomIn" class="icon-button" aria-label="Приблизить"><svg><use href="#plus"/></svg></button></div></div>
-    <div class="studio-bottom"><p class="interaction-hint"><span>↔</span>Перетаскивай для навигации<span class="hint-dot">·</span>Прокручивай для приближения</p><div class="export-actions"><button id="pngButton" class="export-button"><svg><use href="#download"/></svg>Сохранить PNG<span>4K</span></button><button id="videoButton" class="export-button primary"><svg><use href="#video"/></svg><span id="videoLabel">Записать видео</span><span class="export-duration">10 сек</span></button></div></div>
+    <div class="studio-bottom"><p class="interaction-hint">Прокручивай для бесконечного приближения</p><div class="export-actions"><button id="pngButton" class="export-button"><svg><use href="#download"/></svg>Сохранить PNG<span>4K</span></button><button id="videoButton" class="export-button primary"><svg><use href="#video"/></svg><span id="videoLabel">Записать видео</span><span class="export-duration">10 сек</span></button></div></div>
     <footer class="studio-footer"><span>PROCEDURAL WORLDS / REAL-TIME RENDER</span><span>Независимый арт-инструмент<span class="footer-plus">+</span></span></footer>
   </section>
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<dialog id="helpDialog"><div class="dialog-header"><h2>Исследуй бесконечность</h2><button id="closeHelp" class="icon-button" aria-label="Закрыть">×</button></div><p>Восемь множеств Julia с разным ветвлением и два объёмных фрактала — Вичека и Менгера. Переплетения трёх овалов вплетены в окраску узора.</p><dl><dt>Перетаскивание / один палец</dt><dd>Перемещение по фракталу</dd><dt>Колесо / два пальца</dt><dd>Приближение к выбранной точке</dd><dt>Двойной клик</dt><dd>Приближение к курсору</dd><dt>Пробел</dt><dd>Запуск и пауза полёта</dd><dt>R / F</dt><dd>Сброс камеры / полный экран</dd></dl><p>PNG сохраняется в 4K. Видео — 10 секунд, до 1080p, без надписей интерфейса. Формат файла зависит от браузера: WebM или MP4. Во время записи камера летит автоматически.</p><p class="dialog-note">Полёт приближается к точке самоподобия: внутри уже видимых ветвей повторяется тот же фрактал. Перетаскивание и колесо останавливают полёт для ручного исследования.</p></dialog>
-<script type="module" src="app.js?v=3"></script>
+<dialog id="helpDialog"><div class="dialog-header"><h2>Исследуй бесконечность</h2><button id="closeHelp" class="icon-button" aria-label="Закрыть">×</button></div><p>Восемь бесшовных фрактальных узоров и два объёмных режима. Внутри каждого масштаба заранее виден следующий повтор той же композиции. Переплетения трёх овалов вплетены в узор.</p><dl><dt>Колесо / два пальца</dt><dd>Приближение к центру узора</dd><dt>Двойной клик</dt><dd>Увеличение по центру</dd><dt>Пробел</dt><dd>Запуск и пауза полёта</dd><dt>R / F</dt><dd>Сброс камеры / полный экран</dd></dl><p>PNG сохраняется в 4K. Видео — 10 секунд, до 1080p, без надписей интерфейса. Формат файла зависит от браузера: WebM или MP4. Во время записи камера летит автоматически.</p><p class="dialog-note">Центр закреплён. После полного цикла масштаба вся композиция повторяется без смены рисунка. Колесо и жест двумя пальцами управляют глубиной, перемещение в стороны отключено.</p></dialog>
+<script type="module" src="app.js?v=5"></script>
 </body></html>
