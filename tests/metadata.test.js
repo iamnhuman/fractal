@@ -19,6 +19,8 @@ test('social artwork is an actual 1200 by 630 JPEG',()=>{
 test('every preset has a static thumbnail',()=>{SCENES.forEach((s,i)=>assert.ok(existsSync(new URL('../previews/'+String(i+1).padStart(2,'0')+'.jpg',import.meta.url)),s.name));});
 test('2D and 3D shader paths stay separate',()=>{
   assert.ok(!fragmentFor(0).includes('vec3 field3D'));
-  assert.ok(!fragmentFor(8).includes('vec3 field2D'));
-  assert.ok(fragmentFor(9).includes('distanceField'));
+  for(const type of [6,7,8,9]){
+    assert.ok(!fragmentFor(type).includes('vec3 field2D'));
+    assert.ok(fragmentFor(type).includes('distanceField'));
+  }
 });

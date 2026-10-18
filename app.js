@@ -1,30 +1,30 @@
-import {FractalRenderer, PALETTES, SCENES, GEOMETRIES} from './engine.js?v=5';
-import {InfiniteCamera} from './navigation.js?v=5';
-import {dynamics} from './fractal-math.js?v=5';
+import {FractalRenderer, PALETTES, SCENES, GEOMETRIES} from './engine.js?v=6';
+import {InfiniteCamera} from './navigation.js?v=6';
+import {dynamics} from './fractal-math.js?v=6';
 
 const $=id=>document.getElementById(id);
 const canvas=$('fractal');
-const settings={detail:220,emblem:SCENES[0].emblem,relief:65,palette:0,type:0,c:[...SCENES[0].c],phase:0,speed:1,rotate:false};
+const settings={detail:220,emblem:SCENES[0].emblem,relief:80,palette:0,type:0,c:[...SCENES[0].c],phase:0,speed:1.3,rotate:false};
 const camera=new InfiniteCamera(SCENES[0].center,SCENES[0].scale,SCENES[0].angle,dynamics(settings.type,settings.c));
-let renderer,exportRenderer,sceneIndex=0,format='16:9',playing=false,dirty=true;
+let renderer,exportRenderer,sceneIndex=0,format='16:9',playing=true,dirty=true;
 let lastTime=0,recording=null,toastTimer,renderAvailable=false;
 
 function toast(message){$('toast').textContent=message;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),4000);}
 function segmented(id,value){document.querySelectorAll('#'+id+' button').forEach(b=>{const on=b.dataset.value===String(value);b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on));});}
 function syncSliders(){for(const id of ['detail','emblem','relief','speed']){const input=$(id);input.value=settings[id];input.style.setProperty('--fill',((input.value-input.min)/(input.max-input.min)*100)+'%');$(id+'Value').textContent=id==='detail'?settings[id]:id==='speed'?settings[id].toFixed(1)+'×':settings[id]+'%';} $('rotate').checked=settings.rotate;}
 function syncPalette(){document.querySelectorAll('.palette').forEach((b,i)=>{b.classList.toggle('selected',i===settings.palette);b.setAttribute('aria-pressed',String(i===settings.palette));});$('paletteName').textContent=PALETTES[settings.palette].name;}
-function syncScene(){document.querySelectorAll('.scene').forEach((b,i)=>{b.classList.toggle('selected',i===sceneIndex);b.setAttribute('aria-pressed',String(i===sceneIndex));});const s=SCENES[sceneIndex];$('sceneName').textContent=String(sceneIndex+1).padStart(2,'0')+' — '+s.name.toUpperCase();document.querySelector('.scenes-section .mono').textContent=String(sceneIndex+1).padStart(2,'0')+' / '+SCENES.length;const threeD=settings.type>=8;$('geometryNote').textContent=threeD?'Объём · свет и перспектива':'Бесшовный узор · вложенный повтор';}
+function syncScene(){document.querySelectorAll('.scene').forEach((b,i)=>{b.classList.toggle('selected',i===sceneIndex);b.setAttribute('aria-pressed',String(i===sceneIndex));});const s=SCENES[sceneIndex];$('sceneName').textContent=String(sceneIndex+1).padStart(2,'0')+' — '+s.name.toUpperCase();document.querySelector('.scenes-section .mono').textContent=String(sceneIndex+1).padStart(2,'0')+' / '+SCENES.length;const threeD=settings.type>=6;$('geometryNote').textContent=threeD?'Объём · свет и перспектива':'Бесшовный узор · вложенный повтор';}
 function syncPlay(){const b=$('playButton');b.classList.toggle('playing',playing);b.querySelector('use').setAttribute('href',playing?'#pause':'#play');b.querySelector('span').textContent=playing?'Пауза':'Начать полёт';b.setAttribute('aria-label',playing?'Остановить полёт':'Запустить полёт');b.setAttribute('aria-pressed',String(playing));}
-function setPlaying(value){playing=value;syncPlay();dirty=true;}
+function setPlaying(value){playing=value;syncPlay();resize();dirty=true;}
 function resetCamera(){const s=SCENES[sceneIndex];camera.reset(s.center,s.scale,s.angle,dynamics(settings.type,settings.c));dirty=true;}
 function selectScene(index){sceneIndex=index;const s=SCENES[index];Object.assign(settings,{palette:s.palette,c:[...s.c],type:s.type,emblem:s.emblem,phase:0});resetCamera();syncScene();syncPalette();syncSliders();$('fractalType').value=String(settings.type);resize();}
 function makeUI(){
-  SCENES.forEach((s,i)=>{const b=document.createElement('button');b.className='scene';b.title=s.description;b.innerHTML=`<img src="previews/${String(i+1).padStart(2,'0')}.jpg?v=5" alt="Фрактал ${s.name}" width="256" height="144"><span class="scene-info"><strong>${s.name.toUpperCase()}</strong><span>${s.type>=8?'3D':String(i+1).padStart(2,'0')}</span></span>`;b.addEventListener('click',()=>selectScene(i));$('scenes').append(b);});
+  SCENES.forEach((s,i)=>{const b=document.createElement('button');b.className='scene';b.title=s.description;b.innerHTML=`<img src="previews/${String(i+1).padStart(2,'0')}.jpg?v=6" alt="Фрактал ${s.name}" width="256" height="144"><span class="scene-info"><strong>${s.name.toUpperCase()}</strong><span>${s.type>=6?'3D':String(i+1).padStart(2,'0')}</span></span>`;b.addEventListener('click',()=>selectScene(i));$('scenes').append(b);});
   PALETTES.forEach((p,i)=>{const b=document.createElement('button');b.className='palette';b.title=p.name;b.setAttribute('aria-label','Палитра '+p.name);p.swatches.forEach(c=>{const sw=document.createElement('i');sw.style.background=c;b.append(sw);});b.addEventListener('click',()=>{settings.palette=i;syncPalette();dirty=true;});$('palettes').append(b);});
   GEOMETRIES.forEach((name,i)=>{const option=document.createElement('option');option.value=i;option.textContent=name;$('fractalType').append(option);});
   syncScene();syncPalette();syncSliders();syncPlay();
 }
-function resize(){if(!renderer)return;const viewport=$('viewport'),wrap=$('canvasWrap');if(!document.fullscreenElement){const [a,b]=format.split(':').map(Number),ratio=a/b;let availableWidth=viewport.clientWidth,availableHeight=viewport.clientHeight;if(window.innerWidth<=800)availableHeight=format==='9:16'?window.innerHeight*.57:availableWidth/ratio;const width=Math.min(availableWidth,availableHeight*ratio);wrap.style.width=width+'px';wrap.style.height=width/ratio+'px';}const bounds=canvas.getBoundingClientRect();const dpr=Math.min(window.devicePixelRatio||1,1.75);const maxPixels=settings.type>=8?480000:1500000;const scale=Math.min(dpr,Math.sqrt(maxPixels/Math.max(1,bounds.width*bounds.height)));const w=Math.max(1,Math.round(bounds.width*scale)),h=Math.max(1,Math.round(bounds.height*scale));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;dirty=true;}}
+function resize(){if(!renderer)return;const viewport=$('viewport'),wrap=$('canvasWrap');if(!document.fullscreenElement){const [a,b]=format.split(':').map(Number),ratio=a/b;let availableWidth=viewport.clientWidth,availableHeight=viewport.clientHeight;if(window.innerWidth<=800)availableHeight=format==='9:16'?window.innerHeight*.57:availableWidth/ratio;const width=Math.min(availableWidth,availableHeight*ratio);wrap.style.width=width+'px';wrap.style.height=width/ratio+'px';}const bounds=canvas.getBoundingClientRect();const dpr=Math.min(window.devicePixelRatio||1,2);const maxPixels=settings.type>=6?(playing?1200000:2400000):(playing?3000000:5000000);const scale=Math.min(dpr,Math.sqrt(maxPixels/Math.max(1,bounds.width*bounds.height)));const w=Math.max(1,Math.round(bounds.width*scale)),h=Math.max(1,Math.round(bounds.height*scale));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;dirty=true;}}
 function outputSize(max){const [a,b]=format.split(':').map(Number);return a>=b?[max,Math.round(max*b/a)]:[Math.round(max*a/b),max];}
 function getExportRenderer(){if(!exportRenderer)exportRenderer=new FractalRenderer(document.createElement('canvas'));return exportRenderer;}
 function zoomCenter(factor){if(recording)return;camera.zoom(factor);dirty=true;}
@@ -36,7 +36,7 @@ function animate(time){
     if(settings.rotate)camera.angle+=dt*.035*settings.speed;
     dirty=true;
   }
-  if(dirty){renderer.render(settings,camera);$('zoomValue').textContent=camera.zoomLabel;dirty=false;}
+  if(dirty){renderer.render({...settings,samples:playing?2:4},camera);$('zoomValue').textContent=camera.zoomLabel;dirty=false;}
   if(recording){const elapsed=performance.now()-recording.start;$('recordingTime').textContent=`00:${String(Math.min(10,Math.floor(elapsed/1000))).padStart(2,'0')} / 00:10`;recording.renderer.render(recording.settings,camera);}
 }
 const pointers=new Map();let pinchDistance=0;
@@ -58,7 +58,7 @@ $('fullscreen').addEventListener('click',fullscreen);
 $('helpButton').addEventListener('click',()=>$('helpDialog').showModal());$('closeHelp').addEventListener('click',()=>$('helpDialog').close());$('helpDialog').addEventListener('click',e=>{if(e.target===$('helpDialog')){const r=$('helpDialog').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('helpDialog').close();}});
 document.addEventListener('keydown',e=>{if(e.target.matches('input,select,button,a')||$('helpDialog').open||recording)return;if(e.code==='Space'){e.preventDefault();setPlaying(!playing);}if(e.key.toLowerCase()==='r')resetCamera();if(e.key.toLowerCase()==='f')fullscreen();});
 function saveBlob(blob,extension){if(!blob){toast('Не удалось создать файл. Попробуй ещё раз.');return;}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`fractal-${SCENES[sceneIndex].name.toLowerCase().replaceAll(' ','-')}-${Date.now()}.${extension}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}
-$('pngButton').addEventListener('click',()=>{if(!renderAvailable)return;const b=$('pngButton');b.disabled=true;try{const r=getExportRenderer();[r.canvas.width,r.canvas.height]=outputSize(3840);r.render(settings,camera);r.canvas.toBlob(blob=>{saveBlob(blob,'png');b.disabled=false;if(blob)toast('PNG в 4K подготовлен для скачивания');},'image/png');}catch(error){b.disabled=false;toast('Экспорт не удался: '+error.message);}});
+$('pngButton').addEventListener('click',()=>{if(!renderAvailable)return;const b=$('pngButton');b.disabled=true;try{const r=getExportRenderer();[r.canvas.width,r.canvas.height]=outputSize(3840);r.render({...settings,samples:4},camera);r.canvas.toBlob(blob=>{saveBlob(blob,'png');b.disabled=false;if(blob)toast('PNG в 4K подготовлен для скачивания');},'image/png');}catch(error){b.disabled=false;toast('Экспорт не удался: '+error.message);}});
 function lockRecording(value){document.querySelectorAll('.sidebar button,.sidebar input,.sidebar select,#formats button,#fractalType button,#resetButton,#zoomIn,#zoomOut,#pngButton,#playButton').forEach(el=>el.disabled=value);$('recordingBadge').hidden=!value;$('videoButton').classList.toggle('recording',value);$('videoLabel').textContent=value?'Остановить':'Записать видео';$('videoButton').querySelector('.export-duration').textContent=value?'■':'10 сек';$('renderStatus').textContent=value?'RECORDING':'LIVE RENDER';}
 function stopRecording(){if(recording&&recording.recorder.state!=='inactive')recording.recorder.stop();}
 $('videoButton').addEventListener('click',()=>{
@@ -66,7 +66,7 @@ $('videoButton').addEventListener('click',()=>{
   if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){toast('Запись видео недоступна в этом браузере. Используй Chrome или Edge.');return;}
   let stream,recorder,previousPlaying=playing;
   try{
-    const r=getExportRenderer();[r.canvas.width,r.canvas.height]=outputSize(1920);r.render(settings,camera);
+    const r=getExportRenderer();[r.canvas.width,r.canvas.height]=outputSize(1920);r.render({...settings,samples:4},camera);
     const mime=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'].find(type=>MediaRecorder.isTypeSupported(type));
     if(!mime){toast('Браузер не поддерживает подходящий видеоформат');return;}
     stream=r.canvas.captureStream(30);recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:10000000});const chunks=[];
@@ -74,7 +74,7 @@ $('videoButton').addEventListener('click',()=>{
     const restore=()=>{if(recording)clearTimeout(recording.timer);stream.getTracks().forEach(t=>t.stop());recording=null;lockRecording(false);setPlaying(previousPlaying);};
     recorder.onstop=()=>{restore();if(chunks.length){saveBlob(new Blob(chunks,{type:mime}),mime.includes('mp4')?'mp4':'webm');toast('Видео готово для скачивания');}else toast('Запись получилась пустой. Попробуй ещё раз.');};
     recorder.onerror=()=>{restore();toast('Не удалось записать видео. Попробуй в другом браузере.');};
-    recorder.start(250);recording={recorder,renderer:r,settings:{...settings,c:[...settings.c]},start:performance.now(),timer:setTimeout(stopRecording,10000)};setPlaying(true);lockRecording(true);
+    recorder.start(250);recording={recorder,renderer:r,settings:{...settings,c:[...settings.c],samples:2},start:performance.now(),timer:setTimeout(stopRecording,10000)};setPlaying(true);lockRecording(true);
   }catch(error){stream?.getTracks().forEach(t=>t.stop());recording=null;lockRecording(false);setPlaying(previousPlaying);toast('Запись не удалась: '+error.message);}
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&recording)stopRecording();lastTime=performance.now();dirty=true;});
@@ -84,7 +84,7 @@ canvas.addEventListener('webglcontextrestored',()=>{renderer=new FractalRenderer
 makeUI();
 if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){$('videoLabel').textContent='Видео в Chrome';$('videoButton').title='Для записи видео открой эту страницу в Chrome или Edge';}
 document.addEventListener('fullscreenchange',()=>{resize();dirty=true;});
-try{renderer=new FractalRenderer(canvas);renderAvailable=true;resize();renderer.render(settings,camera);new ResizeObserver(resize).observe($('viewport'));window.addEventListener('resize',resize);requestAnimationFrame(animate);}catch(error){console.error(error);$('canvasError').hidden=false;$('renderStatus').textContent='WEBGL UNAVAILABLE';$('pngButton').disabled=true;$('videoButton').disabled=true;$('playButton').disabled=true;}
+try{renderer=new FractalRenderer(canvas);renderAvailable=true;resize();renderer.render({...settings,samples:playing?2:4},camera);new ResizeObserver(resize).observe($('viewport'));window.addEventListener('resize',resize);requestAnimationFrame(animate);}catch(error){console.error(error);$('canvasError').hidden=false;$('renderStatus').textContent='WEBGL UNAVAILABLE';$('pngButton').disabled=true;$('videoButton').disabled=true;$('playButton').disabled=true;}
 
 // Read-only state and a rendered pixel probe for diagnostics, without exposing mutations.
-window.fractalStudio={getState:()=>({settings:{...settings,c:[...settings.c]},camera:camera.snapshot(),playing,format,recording:!!recording,renderAvailable,resolution:[canvas.width,canvas.height]}),pixelProbe:()=>{const gl=renderer.gl,p=new Uint8Array(4);gl.readPixels(Math.floor(canvas.width/2),Math.floor(canvas.height/2),1,1,gl.RGBA,gl.UNSIGNED_BYTE,p);return [...p];}};
+window.fractalStudio={getState:()=>({settings:{...settings,c:[...settings.c],samples:playing?2:4},camera:camera.snapshot(),playing,format,recording:!!recording,renderAvailable,resolution:[canvas.width,canvas.height]}),pixelProbe:()=>{const gl=renderer.gl,p=new Uint8Array(4);gl.readPixels(Math.floor(canvas.width/2),Math.floor(canvas.height/2),1,1,gl.RGBA,gl.UNSIGNED_BYTE,p);return [...p];}};
