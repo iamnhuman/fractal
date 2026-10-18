@@ -10,21 +10,21 @@
   <meta property="og:locale" content="ru_RU">
   <meta property="og:site_name" content="Fractal Lab">
   <meta property="og:title" content="Fractal Lab — бесконечно глубже">
-  <meta property="og:description" content="10 разных фракталов, восемь объёмных миров и непрерывное путешествие в детали. Создай свой узор.">
+  <meta property="og:description" content="10 разных фракталов, четыре объёмных мира и непрерывное путешествие в детали. Создай свой узор.">
   <meta property="og:url" content="https://iamnhuman.github.io/fractal/">
-  <meta property="og:image" content="https://iamnhuman.github.io/fractal/preview.jpg?v=7">
-  <meta property="og:image:secure_url" content="https://iamnhuman.github.io/fractal/preview.jpg?v=7">
+  <meta property="og:image" content="https://iamnhuman.github.io/fractal/preview.jpg?v=8">
+  <meta property="og:image:secure_url" content="https://iamnhuman.github.io/fractal/preview.jpg?v=8">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Клейниан с рекурсивной резьбой, объёмные фрактальные скульптуры и золотой лабиринт Fractal Lab">
+  <meta property="og:image:alt" content="Кружевные спирали Julia, объёмный мандельбульб и золотой лабиринт Fractal Lab">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Fractal Lab — бесконечно глубже">
   <meta name="twitter:description" content="10 фрактальных миров. Плоские и объёмные узоры с непрерывным приближением.">
-  <meta name="twitter:image" content="https://iamnhuman.github.io/fractal/preview.jpg?v=7">
+  <meta name="twitter:image" content="https://iamnhuman.github.io/fractal/preview.jpg?v=8">
   <link rel="canonical" href="https://iamnhuman.github.io/fractal/">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -49,10 +49,10 @@
     <div class="intro"><div class="eyebrow"><span class="red-line"></span>GENERATIVE EXPLORER</div><h1>Бесконечно<br>глубже<span>.</span></h1><p>Выбери мир. Приближайся к деталям.<br>Собери свой маршрут.</p></div>
     <section class="section scenes-section"><div class="section-heading"><h2>Отправная точка</h2><span class="mono">01 / 10</span></div><div id="scenes" class="scenes"></div></section>
     <section class="section"><div class="section-heading"><h2>Геометрия</h2><span class="tiny-label">FORM</span></div>
-      <label class="sr-only" for="fractalType">Тип фрактала</label><select id="fractalType" class="geometry-select"></select><p id="geometryNote" class="geometry-note">Объём · свет и перспектива</p>
+      <label class="sr-only" for="fractalType">Тип фрактала</label><select id="fractalType" class="geometry-select"></select><p id="geometryNote" class="geometry-note">Бесшовный узор · вложенный повтор</p>
       <label class="slider-label" for="detail">Детализация<output id="detailValue">220</output></label><input id="detail" type="range" min="80" max="360" step="10" value="220">
       <label class="slider-label" for="emblem">Овальные мотивы<output id="emblemValue">70%</output></label><input id="emblem" type="range" min="0" max="100" value="70">
-      <label class="slider-label" for="relief">Рельеф<output id="reliefValue">80%</output></label><input id="relief" type="range" min="0" max="100" value="80">
+      <label class="slider-label" for="relief">Рельеф<output id="reliefValue">65%</output></label><input id="relief" type="range" min="0" max="100" value="65">
     </section>
     <section class="section palette-section"><div class="section-heading"><h2>Цветовая история</h2><span id="paletteName" class="tiny-label">SIGNATURE</span></div><div id="palettes" class="palettes" aria-label="Палитра"></div></section>
     <section class="section movement-section"><div class="section-heading"><h2>Движение</h2><span class="tiny-label">MOTION</span></div>
@@ -76,6 +76,6 @@
   </section>
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<dialog id="helpDialog"><div class="dialog-header"><h2>Исследуй бесконечность</h2><button id="closeHelp" class="icon-button" aria-label="Закрыть">×</button></div><p>Восемь объёмных фрактальных миров и два плоских узора. Полёт начинается сразу, в том числе при выборе нового мира. Колесо и жест зума не останавливают анимацию. Паузу можно включить кнопкой или пробелом. Внутри каждого масштаба заранее виден следующий повтор той же композиции. Переплетения трёх овалов вплетены в узор.</p><dl><dt>Колесо / два пальца</dt><dd>Приближение к центру узора</dd><dt>Двойной клик</dt><dd>Увеличение по центру</dd><dt>Пробел</dt><dd>Запуск и пауза полёта</dd><dt>R / F</dt><dd>Сброс камеры / полный экран</dd></dl><p>PNG сохраняется в 4K. Видео — 10 секунд, до 1080p, без надписей интерфейса. Формат файла зависит от браузера: WebM или MP4. Во время записи камера летит автоматически.</p><p class="dialog-note">Центр закреплён. После полного цикла масштаба вся композиция повторяется без смены рисунка. Колесо и жест двумя пальцами управляют глубиной, перемещение в стороны отключено.</p></dialog>
-<script type="module" src="app.js?v=7"></script>
+<dialog id="helpDialog"><div class="dialog-header"><h2>Исследуй бесконечность</h2><button id="closeHelp" class="icon-button" aria-label="Закрыть">×</button></div><p>Четыре объёмных фрактальных мира и шесть плоских узоров. Полёт начинается сразу, в том числе при выборе нового мира. Колесо и жест зума не останавливают анимацию. Паузу можно включить кнопкой или пробелом. Внутри каждого масштаба заранее виден следующий повтор той же композиции. Переплетения трёх овалов вплетены в узор.</p><dl><dt>Колесо / два пальца</dt><dd>Приближение к центру узора</dd><dt>Двойной клик</dt><dd>Увеличение по центру</dd><dt>Пробел</dt><dd>Запуск и пауза полёта</dd><dt>R / F</dt><dd>Сброс камеры / полный экран</dd></dl><p>PNG сохраняется в 4K. Видео — 10 секунд, до 1080p, без надписей интерфейса. Формат файла зависит от браузера: WebM или MP4. Во время записи камера летит автоматически.</p><p class="dialog-note">Центр закреплён. После полного цикла масштаба вся композиция повторяется без смены рисунка. Колесо и жест двумя пальцами управляют глубиной, перемещение в стороны отключено.</p></dialog>
+<script type="module" src="app.js?v=8"></script>
 </body></html>

@@ -1,3 +1,4 @@
+import {classicDynamics,classicMeasure} from './classic.js?v=8';
 // Normalized phase keeps infinite zoom precise. Geometry repeats at ratio R;
 // the cycle counter is never used to change a material, light or fractal seed.
 export const TAU=2*Math.PI;
@@ -15,7 +16,7 @@ export const LOOP_STYLES=[
 ];
 export const fract=x=>x-Math.floor(x);
 export const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-export function dynamics(type,c=[0,0]){return{...LOOP_STYLES[type],type,seed:[...c]};}
+export function dynamics(type,c=[0,0]){return type<4?classicDynamics(type,c):{...LOOP_STYLES[type],type,seed:[...c]};}
 export function loopCoordinates(point,model,phase=0){
   const radius=Math.max(Math.hypot(...point),1e-12),angle=Math.atan2(point[1],point[0]);
   let u=TAU*fract(Math.log(radius)/Math.log(model.ratio)-phase);
@@ -24,6 +25,7 @@ export function loopCoordinates(point,model,phase=0){
 }
 // Scalar references for the Julia and Newton potentials.
 export function patternMeasure(point,model,detail=220){
+  if(model.classic)return classicMeasure(point,model,0,detail);
   if(model.type===4){
     let [x,y]=point,steps=0,error=1;
     for(let i=0;i<Math.min(48,Math.floor(detail/8));i++){

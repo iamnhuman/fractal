@@ -1,10 +1,10 @@
-import {FractalRenderer, PALETTES, SCENES, GEOMETRIES, is3D} from './engine.js?v=7';
-import {InfiniteCamera} from './navigation.js?v=7';
-import {dynamics} from './fractal-math.js?v=7';
+import {FractalRenderer, PALETTES, SCENES, GEOMETRIES, is3D} from './engine.js?v=8';
+import {InfiniteCamera} from './navigation.js?v=8';
+import {dynamics} from './fractal-math.js?v=8';
 
 const $=id=>document.getElementById(id);
 const canvas=$('fractal');
-const settings={detail:220,emblem:SCENES[0].emblem,relief:80,palette:0,type:0,c:[...SCENES[0].c],phase:0,speed:1.3,rotate:false};
+const settings={detail:220,emblem:SCENES[0].emblem,relief:SCENES[0].relief??80,palette:0,type:0,c:[...SCENES[0].c],phase:0,speed:1.3,rotate:false};
 const camera=new InfiniteCamera(SCENES[0].center,SCENES[0].scale,SCENES[0].angle,dynamics(settings.type,settings.c));
 let renderer,exportRenderer,sceneIndex=0,format='16:9',playing=true,dirty=true;
 let lastTime=0,recording=null,toastTimer,renderAvailable=false;
@@ -17,9 +17,9 @@ function syncScene(){document.querySelectorAll('.scene').forEach((b,i)=>{b.class
 function syncPlay(){const b=$('playButton');b.classList.toggle('playing',playing);b.querySelector('use').setAttribute('href',playing?'#pause':'#play');b.querySelector('span').textContent=playing?'Пауза':'Начать полёт';b.setAttribute('aria-label',playing?'Остановить полёт':'Запустить полёт');b.setAttribute('aria-pressed',String(playing));}
 function setPlaying(value){playing=value;syncPlay();resize();dirty=true;}
 function resetCamera(){const s=SCENES[sceneIndex];camera.reset(s.center,s.scale,s.angle,dynamics(settings.type,settings.c));dirty=true;}
-function selectScene(index){sceneIndex=index;const s=SCENES[index];Object.assign(settings,{palette:s.palette,c:[...s.c],type:s.type,emblem:s.emblem,phase:0});resetCamera();syncScene();syncPalette();syncSliders();$('fractalType').value=String(settings.type);setPlaying(true);}
+function selectScene(index){sceneIndex=index;const s=SCENES[index];Object.assign(settings,{palette:s.palette,c:[...s.c],type:s.type,emblem:s.emblem,relief:s.relief??80,phase:0});resetCamera();syncScene();syncPalette();syncSliders();$('fractalType').value=String(settings.type);setPlaying(true);}
 function makeUI(){
-  SCENES.forEach((s,i)=>{const b=document.createElement('button');b.className='scene';b.title=s.description;b.innerHTML=`<img src="previews/${String(i+1).padStart(2,'0')}.jpg?v=7" alt="Фрактал ${s.name}" width="256" height="144"><span class="scene-info"><strong>${s.name.toUpperCase()}</strong><span>${is3D(s.type)?'3D':String(i+1).padStart(2,'0')}</span></span>`;b.addEventListener('click',()=>selectScene(i));$('scenes').append(b);});
+  SCENES.forEach((s,i)=>{const b=document.createElement('button');b.className='scene';b.title=s.description;b.innerHTML=`<img src="previews/${String(i+1).padStart(2,'0')}.jpg?v=8" alt="Фрактал ${s.name}" width="256" height="144"><span class="scene-info"><strong>${s.name.toUpperCase()}</strong><span>${is3D(s.type)?'3D':String(i+1).padStart(2,'0')}</span></span>`;b.addEventListener('click',()=>selectScene(i));$('scenes').append(b);});
   PALETTES.forEach((p,i)=>{const b=document.createElement('button');b.className='palette';b.title=p.name;b.setAttribute('aria-label','Палитра '+p.name);p.swatches.forEach(c=>{const sw=document.createElement('i');sw.style.background=c;b.append(sw);});b.addEventListener('click',()=>{settings.palette=i;syncPalette();dirty=true;});$('palettes').append(b);});
   GEOMETRIES.forEach((name,i)=>{const option=document.createElement('option');option.value=i;option.textContent=name;$('fractalType').append(option);});
   syncScene();syncPalette();syncSliders();syncPlay();

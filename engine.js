@@ -1,10 +1,11 @@
-import {InfiniteCamera} from './navigation.js?v=7';
-import {dynamics} from './fractal-math.js?v=7';
+import {CLASSIC_SHADER} from './classic.js?v=8';
+import {InfiniteCamera} from './navigation.js?v=8';
+import {dynamics} from './fractal-math.js?v=8';
 export const PALETTES = [
-  {name:'CRIMSON',colors:['#100c17','#a61540','#ffb6ab','#502049','#fff0d4'],swatches:['#de2858','#ffbeac','#33162f']},
-  {name:'OCEAN',colors:['#041221','#11688c','#9cf5e6','#183c73','#e1fff5'],swatches:['#158ca1','#a6f3e2','#122744']},
-  {name:'EMBER',colors:['#140b13','#ce3c17','#ffd579','#803047','#fff4ca'],swatches:['#ed5c24','#ffd078','#432136']},
-  {name:'VIOLET',colors:['#120c24','#763ab6','#edc0ff','#333280','#fff0fd'],swatches:['#9860d9','#e8b3ef','#27214e']},
+  {name:'CRIMSON',colors:['#130d10','#b8172a','#eee7dc','#958677','#f7f3ed'],swatches:['#e32a43','#f0e9df','#1a1618']},
+  {name:'REDLINE',colors:['#080b0e','#d91b31','#f2f0e9','#474a50','#ed1f38'],swatches:['#ed203a','#e7e7e5','#35373b']},
+  {name:'DESERT',colors:['#23180e','#8b5733','#e0c49a','#6b482a','#faf0da'],swatches:['#b17b49','#e1c49b','#58422b']},
+  {name:'SEA GLASS',colors:['#06191c','#127a7b','#cce4d4','#4c9298','#f0f0de'],swatches:['#218d8c','#d1e7d8','#153c40']},
   {name:'JADE',colors:['#061a16','#27785a','#d6ee9a','#42614c','#f3f7d0'],swatches:['#519b6b','#d3e59c','#16392e']},
   {name:'COPPER',colors:['#17111a','#9d5638','#ebc7a5','#514457','#fff0db'],swatches:['#bd7a50','#eac5a3','#382a39']},
   {name:'ELECTRIC',colors:['#050c23','#164cca','#75d5ff','#5b20a2','#e7edff'],swatches:['#3772ef','#86d8ff','#36177b']},
@@ -12,13 +13,13 @@ export const PALETTES = [
   {name:'PEARL',colors:['#10151c','#547889','#d4e2dd','#79778c','#fff4df'],swatches:['#b8d3d2','#77788a','#e6d8c7']},
   {name:'GOLD',colors:['#11100c','#7e662d','#dace9b','#446a64','#fff4d4'],swatches:['#b5a16a','#e4d6a8','#41675d']}
 ];
-export const is3D=type=>type!==4&&type!==5;
-export const GEOMETRIES=['Клейниан · 3D','Аполлоний · 3D','Мандельбульб z⁶ · 3D','Кватернион Julia · 3D','Ньютон · переплетение','Феникс · медные перья','Мандельбульб · 3D','Мандельбокс · 3D','Вичек · 3D','Менгер · 3D'];
+export const is3D=type=>type>=6;
+export const GEOMETRIES=['Julia · кружево','Julia · двойные ветви','Julia · пустынные перья','Julia · стеклянные кораллы','Ньютон · переплетение','Феникс · медные перья','Мандельбульб · 3D','Мандельбокс · 3D','Вичек · 3D','Менгер · 3D'];
 export const SCENES=[
-  {name:'Crimson Lace',description:'Клейниан: складки, арки и тонкая металлическая резьба',palette:0,c:[-.835,-.2321],center:[0,0],scale:1,type:0,emblem:55,angle:-.15},
-  {name:'Ocean Valley',description:'Аполлониевы раковины и вложенные сферы',palette:1,c:[-.70176,-.3842],center:[0,0],scale:1,type:1,emblem:30,angle:.2},
-  {name:'Solar Flare',description:'Шестая степень мандельбульба: огненная скульптура',palette:2,c:[.45,.3],center:[0,0],scale:1,type:2,emblem:35,angle:.12},
-  {name:'Violet Mirror',description:'Кватернион Julia: объёмные узлы и разветвления',palette:3,c:[-.38,.48],center:[0,0],scale:1,type:3,emblem:45,angle:.35},
+  {name:'Crimson Lace',description:'Кружевные спирали и вложенные раковины Julia',palette:0,c:[-.74543,.11301],center:[0,0],scale:1,type:0,emblem:70,relief:65,angle:-.15},
+  {name:'Redline',description:'Двойные закрученные ветви и глубокие завитки Julia',palette:1,c:[-.8,.156],center:[0,0],scale:1,type:1,emblem:50,relief:65,angle:.3},
+  {name:'Desert Bloom',description:'Ветвящиеся песочные спирали Julia',palette:2,c:[-.7269,.1889],center:[0,0],scale:1,type:2,emblem:55,relief:65,angle:-.4},
+  {name:'Glass Garden',description:'Переплетённые стеклянные кораллы Julia',palette:3,c:[-.4,.6],center:[0,0],scale:1,type:3,emblem:80,relief:65,angle:.1},
   {name:'Jade Knot',description:'Нефритовые переплетения фрактала Ньютона',palette:4,c:[.42,.1],center:[0,0],scale:1,type:4,emblem:65,angle:-.35},
   {name:'Copper Feather',description:'Рекурсивные перья фрактала Феникса',palette:5,c:[.56667,-.5],center:[0,0],scale:1,type:5,emblem:40,angle:.2},
   {name:'Electric Bloom',description:'Скульптурный мандельбульб · 3D',palette:6,c:[-.61,.08],center:[0,0],scale:1,type:6,emblem:50,angle:-.2},
@@ -333,12 +334,13 @@ void main(){
   gl_FragColor=vec4(pow(1.-exp(-max(col/count,vec3(0.))*1.6),vec3(.88)),1.);
 }
 `;
-export const fragmentFor=type=>COMMON+(is3D(type)?THREE_D:TWO_D).replaceAll('u_type',String(type));
+export const fragmentFor=type=>COMMON+(type<4?CLASSIC_SHADER:is3D(type)?THREE_D:TWO_D).replaceAll('u_type',String(type));
 export const FRAGMENT=fragmentFor(0);
 const rgb=hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);
 export function renderUniforms(settings,camera,width,height){
   const {phase,rotation,model:m}=camera.frame();
-  const u={u_resolution:[width,height],u_seed:settings.c,u_loop:[Math.log(m.ratio),m.spokes,m.twist,m.warp],u_zoomPhase:phase,u_rotation:rotation,u_emblem:settings.emblem/100,u_relief:settings.relief/100,u_phase:settings.phase||0,u_iterations:settings.detail,u_type:settings.type,u_samples:settings.samples||2};
+  const u={u_resolution:[width,height],u_seed:settings.c,u_loop:[Math.log(m.ratio),m.spokes,m.twist,m.warp],u_zoomPhase:phase,u_rotation:rotation,u_emblem:settings.emblem/100,u_relief:settings.relief/100,u_phase:settings.phase||0,u_iterations:settings.detail+(m.classic?m.charts*m.period:0),u_type:settings.type,u_samples:settings.samples||2};
+  if(m.classic){u.u_chart=[m.charts,m.chartScale,m.fold,m.argument];m.cycle.forEach((point,i)=>u['u_c'+i]=point);}
   PALETTES[settings.palette].colors.forEach((color,i)=>u['u_p'+i]=rgb(color));return u;
 }
 export class FractalRenderer{
@@ -353,7 +355,7 @@ export class FractalRenderer{
     const gl=this.gl,shader=(kind,src)=>{const s=gl.createShader(kind);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;};
     const vs=shader(gl.VERTEX_SHADER,VERTEX),fs=shader(gl.FRAGMENT_SHADER,fragmentFor(type));this.program=gl.createProgram();gl.attachShader(this.program,vs);gl.attachShader(this.program,fs);gl.bindAttribLocation(this.program,0,'a_position');gl.linkProgram(this.program);
     if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(this.program));gl.deleteShader(vs);gl.deleteShader(fs);
-    this.uniforms={};for(const name of ['resolution','seed','loop','zoomPhase','rotation','emblem','relief','phase','iterations','type','samples','p0','p1','p2','p3','p4'])this.uniforms['u_'+name]=gl.getUniformLocation(this.program,'u_'+name);
+    this.uniforms={};for(const name of ['resolution','seed','loop','zoomPhase','rotation','emblem','relief','phase','iterations','type','samples','chart','c0','c1','c2','c3','p0','p1','p2','p3','p4'])this.uniforms['u_'+name]=gl.getUniformLocation(this.program,'u_'+name);
     this.programs.set(key,{program:this.program,uniforms:this.uniforms});
   }
   render(settings,camera){
