@@ -1,6 +1,6 @@
 import {writeFileSync} from 'node:fs';
-import {SCENES,PALETTES,VERTEX,fragmentFor} from '../dist/engine.js';
-import {InfiniteCamera} from '../dist/navigation.js';
+import {SCENES,PALETTES,VERTEX,fragmentFor} from '../engine.js';
+import {InfiniteCamera} from '../navigation.js';
 const rgb=hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);
 const scenes=SCENES.map((s,i)=>{
  const camera=new InfiniteCamera(s.center,s.scale,s.angle),{coarse,fine,blend}=camera.layers();

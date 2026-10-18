@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {InfiniteCamera} from '../dist/navigation.js';
-import {SCENES,GEOMETRIES} from '../dist/engine.js';
+import {InfiniteCamera} from '../navigation.js';
+import {SCENES,GEOMETRIES} from '../engine.js';
 const near=(a,b,tolerance=1e-8)=>assert.ok(Math.abs(a-b)<tolerance,`${a} != ${b}`);
 const wrap=x=>((x%4)+4)%4;
 test('10 presets use 10 different formulas, including two volumes',()=>{assert.equal(SCENES.length,10);assert.equal(new Set(SCENES.map(s=>s.type)).size,10);assert.equal(GEOMETRIES.length,10);assert.equal(SCENES.filter(s=>s.type>=8).length,2);});

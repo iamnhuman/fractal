@@ -80,7 +80,7 @@ for scene in CONFIG['scenes']:
   origin=np.array(u['u_origin'+str(i)]);scale=u['u_scale'+str(i)];point=origin+p*scale;seed=u['u_seed'+str(i)];return field3(point,seed,u) if u['u_type']>=8 else field2(point,seed,u,scale/H)
  mix=u['u_blend'];col=layer(0) if mix<.0001 else layer(1) if mix>.9999 else layer(0)*(1-mix)+layer(1)*mix
  col*= (1-.12*(np.linalg.norm(UV-.5,axis=-1)*1.3)**2)[...,None];col=np.clip(np.nan_to_num(np.maximum(col,0)**.94),0,1)
- im=Image.fromarray((col*255).astype('uint8'));images.append(im);im.resize((384,216),Image.Resampling.LANCZOS).save(ROOT/'dist/previews'/f"{scene['file']}.jpg",quality=88);print('Rendered',scene['file'],flush=True)
+ im=Image.fromarray((col*255).astype('uint8'));images.append(im);im.resize((384,216),Image.Resampling.LANCZOS).save(ROOT/'previews'/f"{scene['file']}.jpg",quality=88);print('Rendered',scene['file'],flush=True)
 # A single share-card uses the actual procedural scenes, with a quiet title strip.
 card=Image.new('RGB',(1200,630),'#101113');draw=ImageDraw.Draw(card)
 font_path='/System/Library/Fonts/Supplemental/Arial.ttf'
@@ -88,7 +88,7 @@ font=ImageFont.truetype(font_path,46);small=ImageFont.truetype(font_path,18)
 draw.text((40,29),'FRACTAL / LAB',font=font,fill='#f4eeea');draw.text((42,91),'10 WORLDS  /  INFINITE EXPLORATION  /  2D + 3D',font=small,fill='#aaa3ae')
 for idx,(scene_index,box) in enumerate([(0,(0,140,600,630)),(8,(600,140,900,630)),(9,(900,140,1200,630))]):
  art=ImageOps.fit(images[scene_index],(box[2]-box[0],box[3]-box[1]),method=Image.Resampling.LANCZOS);card.paste(art,box[:2])
-card.save(ROOT/'dist/preview.jpg',quality=93,optimize=True)
+card.save(ROOT/'preview.jpg',quality=93,optimize=True)
 # Contact sheet is an asset inspection aid, never a screenshot of the website.
 sheet=Image.new('RGB',(1280,900),'#101113');draw=ImageDraw.Draw(sheet)
 for i,im in enumerate(images):
