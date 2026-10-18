@@ -2,10 +2,10 @@
 // the cycle counter is never used to change a material, light or fractal seed.
 export const TAU=2*Math.PI;
 export const LOOP_STYLES=[
-  {ratio:10,spokes:3,twist:2,warp:.15},
-  {ratio:6,spokes:4,twist:-1,warp:.25},
-  {ratio:5,spokes:3,twist:2,warp:.32},
-  {ratio:6,spokes:8,twist:0,warp:.35},
+  {ratio:3,spokes:3,twist:2,warp:.15},
+  {ratio:3.4,spokes:4,twist:-1,warp:.25},
+  {ratio:3.2,spokes:3,twist:2,warp:.32},
+  {ratio:3.8,spokes:8,twist:0,warp:.35},
   {ratio:5,spokes:5,twist:-2,warp:.22},
   {ratio:8,spokes:2,twist:1,warp:.22},
   {ratio:3,spokes:5,twist:0,warp:0},
@@ -35,6 +35,18 @@ export function patternMeasure(point,model,detail=220){
     const smooth=Math.max(0,steps-Math.log(Math.log(clamp(error,1e-12,.999))/Math.log(.0001))/Math.LN2);
     return[smooth*.032+.2,Math.floor(Math.atan2(y,x)/TAU*3+.5),error];
   }
+  if(model.type===5){
+    let [x,y]=point,px=0,py=0,dx=1,dy=0,pdx=0,pdy=0,logScale=0,trap=10;
+    for(let i=0;i<detail;i++){
+      const nx=x*x-y*y+model.seed[0]+model.seed[1]*px,ny=2*x*y+model.seed[1]*py;
+      const ndx=2*(x*dx-y*dy)+model.seed[1]*pdx,ndy=2*(x*dy+y*dx)+model.seed[1]*pdy;
+      [px,py,pdx,pdy]=[x,y,dx,dy];[x,y,dx,dy]=[nx,ny,ndx,ndy];
+      if(Math.hypot(dx,dy)>1e10){dx*=1e-10;dy*=1e-10;pdx*=1e-10;pdy*=1e-10;logScale+=Math.log(1e10);}
+      const radius=Math.hypot(x,y);trap=Math.min(trap,Math.abs(radius-.6));
+      if(radius>64)return[(i+2-Math.log(Math.log(radius))/Math.LN2)*.032+.16,trap,.5*Math.log(radius)*radius*Math.exp(clamp(-logScale-Math.log(Math.max(Math.hypot(dx,dy),1e-20)),-80,20))];
+    }
+    return[.01+trap*.01,trap,0];
+  }
   let [x,y]=point,logDerivative=0,trap=10;const degree=model.type<2||model.type===5?2:model.type+1;
   for(let i=0;i<detail;i++){
     const r=Math.max(Math.hypot(x,y),1e-10),a=Math.atan2(y,x);
@@ -55,12 +67,12 @@ export function spongeDistance(point,type){
  }
  return d;
 }
-function bulbDistance(p){
+function bulbDistance(p,power=8){
  let z=[...p],dr=1,r=0;
  for(let i=0;i<10;i++){
   r=Math.hypot(...z);if(r>2.8)break;
-  const safe=Math.max(r,.00001),theta=Math.acos(clamp(z[2]/safe,-1,1))*8,phi=Math.atan2(z[1],z[0])*8,radius=safe**8;
-  dr=8*safe**7*dr+1;z=[radius*Math.sin(theta)*Math.cos(phi)+p[0],radius*Math.sin(theta)*Math.sin(phi)+p[1],radius*Math.cos(theta)+p[2]];
+  const safe=Math.max(r,.00001),theta=Math.acos(clamp(z[2]/safe,-1,1))*power,phi=Math.atan2(z[1],z[0])*power,radius=safe**power;
+  dr=power*safe**(power-1)*dr+1;z=[radius*Math.sin(theta)*Math.cos(phi)+p[0],radius*Math.sin(theta)*Math.sin(phi)+p[1],radius*Math.cos(theta)+p[2]];
  }
  return .5*Math.log(Math.max(r,.00001))*r/dr;
 }
@@ -72,19 +84,49 @@ function mandelboxDistance(p){
  }
  return Math.hypot(...z)/dr;
 }
-function sculpture(point,type){
- let [x,y,z]=point;[x,z]=rotate(x,z,type===6?.23:-.18);[x,y]=rotate(x,y,type===7?.38:.12);const p=[x,y,z];
- if(type===6)return bulbDistance(p.map(v=>v/.95))*.95;
- if(type===7)return mandelboxDistance(p.map(v=>v/.38))*.38;
- return(spongeDistance(p.map(v=>v/.8),type)-(type===8?.045:.008))*.8;
+function kleinDistance(p){
+ let z=p.map(v=>v*1.7),derivative=1;
+ for(let i=0;i<9;i++){
+  z=z.map((v,j)=>2*clamp(v,-[.85,.7,1][j],[.85,.7,1][j])-v);
+  const fold=Math.max(1.08/Math.max(z.reduce((sum,v)=>sum+v*v,0),.0001),1);z=z.map(v=>v*fold);derivative*=fold;
+  [z[0],z[1]]=rotate(z[0],z[1],.12);
+ }
+ return(Math.hypot(z[0],z[1])-.46)/derivative/1.7;
 }
+function apollonianDistance(p){
+ let z=p.map(v=>v*1.55),derivative=1;
+ for(let i=0;i<8;i++){
+  z=z.map(v=>2*fract(v*.5+.5)-1);const fold=1.45/Math.max(z.reduce((sum,v)=>sum+v*v,0),.08);z=z.map(v=>v*fold);derivative*=fold;
+ }
+ return(.28*Math.abs(z[2])-.018)/derivative/1.55;
+}
+function quaternionDistance(p){
+ let [x,y,z,w]=[p[1],p[2],0,p[0]],derivative=1,r=Math.hypot(x,y,z,w);
+ for(let i=0;i<13;i++){
+  r=Math.hypot(x,y,z,w);if(r>4)break;derivative=Math.max(2*r*derivative,.00001);
+  [x,y,z,w]=[2*w*x+.6,2*w*y+.45,2*w*z,w*w-x*x-y*y-z*z+.3];
+ }
+ return .5*r*Math.log(Math.max(r,.00001))/derivative;
+}
+function sculpture(point,type){
+ let [x,y,z]=point;[x,z]=rotate(x,z,type===6?.23:-.18);[x,y]=rotate(x,y,type===7?.38:.12);const p=[x,y,z];let distance;
+ if(type===0)distance=kleinDistance(p);
+ else if(type===1)distance=apollonianDistance(p);
+ else if(type===2)distance=bulbDistance(p,6);
+ else if(type===3)distance=quaternionDistance(p.map(v=>v/.92))*.92;
+ else if(type===6)distance=bulbDistance(p.map(v=>v/.95))*.95;
+ else if(type===7)distance=mandelboxDistance(p.map(v=>v/.38))*.38;
+ else distance=(spongeDistance(p.map(v=>v/.8),type)-(type===8?.045:.008))*.8;
+ return Math.max(distance,Math.hypot(...p)-1.28);
+}
+export function volumeView(type){return type===0?[.32,.14,4.8]:type===1?[-.28,.2,4.8]:type===2?[.25,-.18,4.8]:type===3?[.3,.15,4.8]:[.4,.2,4.8];}
 // Three adjacent shells are sufficient: the sculpture's bounding sphere never
 // reaches the next omitted shell. Unlike a 2D warp, this is a 3D distance field.
 export function volumeDistance(point,model){
  const radius=Math.max(Math.hypot(...point),1e-9),scale=model.ratio**Math.floor(Math.log(radius)/Math.log(model.ratio));let distance=radius*100;
  for(const size of [scale/model.ratio,scale,scale*model.ratio]){
-  let [x,y,z]=point.map(v=>v/size);const sides=model.type===6?5:model.type===7?4:6,sector=TAU/sides;
-  [x,y]=rotate(x,y,-Math.floor(Math.atan2(y,x)/sector+.5)*sector);const q=[x-1.48,y,z-1.3],bound=Math.hypot(...q)-1.5;
+  let [x,y,z]=point.map(v=>v/size);const sides=model.type===0?3:model.type===1?5:model.type===2?4:model.type===3?3:model.type===6?5:model.type===7?4:6,sector=TAU/sides;
+  [x,y]=rotate(x,y,-Math.floor(Math.atan2(y,x)/sector+.5)*sector);const q=[x-1.48,Math.abs(y),z-1.3],bound=Math.hypot(...q)-1.5;
   distance=Math.min(distance,(bound>.14?bound:sculpture(q,model.type))*size);
  }
  return distance;

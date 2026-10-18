@@ -1,4 +1,4 @@
-import {dynamics} from './fractal-math.js?v=6';
+import {dynamics} from './fractal-math.js?v=7';
 export class InfiniteCamera{
   constructor(center=[0,0],scale=1,angle=0,model=dynamics(0)){this.reset(center,scale,angle,model);}
   reset(center,scale=1,angle=0,model=this.model){this.model=model;this.baseScale=1;this.scale=1;this.angle=angle;this.level=0;this.phase=0;}

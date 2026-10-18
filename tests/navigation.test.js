@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {InfiniteCamera} from '../navigation.js';
-import {SCENES,GEOMETRIES,renderUniforms} from '../engine.js';
-import {dynamics,loopCoordinates,patternMeasure,volumeDistance} from '../fractal-math.js';
+import {SCENES,GEOMETRIES,renderUniforms,is3D} from '../engine.js';
+import {dynamics,loopCoordinates,patternMeasure,volumeDistance,volumeView} from '../fractal-math.js';
 const near=(a,b,tol=1e-8)=>assert.ok(Math.abs(a-b)<tol,`${a} != ${b}`);
 const makeCamera=s=>new InfiniteCamera([0,0],1,s.angle,dynamics(s.type,s.c));
 const settings=s=>({...s,detail:220,relief:65,phase:0});
 const gpuValues=u=>Object.fromEntries(Object.entries(u).map(([name,value])=>[name,Array.isArray(value)?Array.from(new Float32Array(value)):Math.fround(value)]));
-test('ten distinct recipes, including four volume modes',()=>{assert.equal(SCENES.length,10);assert.equal(new Set(SCENES.map(s=>s.type)).size,10);assert.equal(GEOMETRIES.length,10);assert.equal(SCENES.filter(s=>s.type>=6).length,4);});
+test('ten distinct recipes, including eight volume modes',()=>{assert.equal(SCENES.length,10);assert.equal(new Set(SCENES.map(s=>s.type)).size,10);assert.equal(GEOMETRIES.length,10);assert.equal(SCENES.filter(s=>is3D(s.type)).length,8);});
 test('a complete zoom period repeats ALL shader inputs, including geometry, palette, light and emblems',()=>{
  for(const s of SCENES)for(const phase of [0,.137,.5,.913]){
   const camera=makeCamera(s);camera.zoom(Math.exp(-phase*Math.log(camera.model.ratio)));
@@ -29,8 +29,8 @@ test('the log-radius seam and the angle seam join continuously',()=>{
 test('intermediate magnifications move the existing pattern, rather than freezing the image',()=>{
  for(const s of SCENES){const m=dynamics(s.type,s.c),a=loopCoordinates([.7,.22],m,0),b=loopCoordinates([.7,.22],m,.21);assert.ok(Math.hypot(a[0]-b[0],a[1]-b[1])>.01,s.name);}
 });
-test('Julia escape potential stays finite and varied throughout the zoom cycle',()=>{
- for(const s of SCENES.filter(s=>s.type<6))for(const phase of [0,.17,.33,.5,.67,.83]){
+test('2D escape potentials stay finite and varied throughout the zoom cycle',()=>{
+ for(const s of SCENES.filter(s=>!is3D(s.type)))for(const phase of [0,.17,.33,.5,.67,.83]){
   const m=dynamics(s.type,s.c),values=[];
   for(let y=0;y<18;y++)for(let x=0;x<32;x++){
    const point=[((x+.5)/32*2-1)*16/9,1-(y+.5)/18*2],measure=patternMeasure(loopCoordinates(point,m,phase),m,220);
@@ -41,7 +41,7 @@ test('Julia escape potential stays finite and varied throughout the zoom cycle',
  }
 });
 test('the actual 3D field scales continuously with the camera, including shell boundaries',()=>{
- for(const s of SCENES.filter(s=>s.type>=6)){
+ for(const s of SCENES.filter(s=>is3D(s.type))){
   const model=dynamics(s.type,s.c);
   for(let i=1;i<=150;i++){
    const point=[Math.sin(i*.81)*2,Math.cos(i*.37)*2,Math.sin(i*1.31)*3+.3];
@@ -69,4 +69,14 @@ test('reverse zoom restores the complete original frame',()=>{
  const s=SCENES[0],camera=makeCamera(s),before=gpuValues(renderUniforms(settings(s),camera,1280,720));
  for(let i=0;i<90;i++)camera.zoom(.7);for(let i=0;i<90;i++)camera.zoom(1/.7);
  near(camera.logZoom,0,1e-9);assert.deepEqual(gpuValues(renderUniforms(settings(s),camera,1280,720)),before);
+});
+
+test('every 3D camera path stays outside solid geometry for the complete loop',()=>{
+ for(const s of SCENES.filter(s=>is3D(s.type))){
+  const model=dynamics(s.type,s.c),view=volumeView(s.type);
+  for(let i=0;i<=128;i++){
+   const scale=model.ratio**(-i/128),point=view.map(v=>v*scale);
+   assert.ok(volumeDistance(point,model)>scale*.00035,`${s.name}: camera inside a solid at phase ${i/128}`);
+  }
+ }
 });

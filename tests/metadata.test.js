@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
-import {SCENES,fragmentFor} from '../engine.js';
+import {SCENES,fragmentFor,is3D} from '../engine.js';
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 test('share metadata is present in the original HTML with a public HTTPS image',()=>{
   for(const property of ['og:type','og:title','og:description','og:image','og:image:width','og:image:height'])assert.match(html,new RegExp('property="'+property+'" content="[^"]+"'));
@@ -18,9 +18,9 @@ test('social artwork is an actual 1200 by 630 JPEG',()=>{
 });
 test('every preset has a static thumbnail',()=>{SCENES.forEach((s,i)=>assert.ok(existsSync(new URL('../previews/'+String(i+1).padStart(2,'0')+'.jpg',import.meta.url)),s.name));});
 test('2D and 3D shader paths stay separate',()=>{
-  assert.ok(!fragmentFor(0).includes('vec3 field3D'));
-  for(const type of [6,7,8,9]){
-    assert.ok(!fragmentFor(type).includes('vec3 field2D'));
-    assert.ok(fragmentFor(type).includes('distanceField'));
-  }
+ for(const scene of SCENES){
+  const shader=fragmentFor(scene.type);
+  if(is3D(scene.type)){assert.ok(!shader.includes('vec3 field2D'));assert.ok(shader.includes('distanceField'));}
+  else{assert.ok(!shader.includes('vec3 field3D'));assert.ok(shader.includes('vec3 field2D'));}
+ }
 });
