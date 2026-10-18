@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101113">
+  <meta name="description" content="10 фрактальных миров: от кружевных спиралей до объёмных планет. Исследуй узоры, настрой цвета и сохрани изображение или видео.">
+  <title>Fractal Lab — бесконечно глубже</title>
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:site_name" content="Fractal Lab">
+  <meta property="og:title" content="Fractal Lab — бесконечно глубже">
+  <meta property="og:description" content="10 разных фракталов, два объёмных мира и непрерывное путешествие в детали. Создай свой узор.">
+  <meta property="og:url" content="https://iamnhuman.github.io/fractal/">
+  <meta property="og:image" content="https://iamnhuman.github.io/fractal/preview.jpg">
+  <meta property="og:image:secure_url" content="https://iamnhuman.github.io/fractal/preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Цветные спирали, объёмная фрактальная планета и золотой лабиринт Fractal Lab">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fractal Lab — бесконечно глубже">
+  <meta name="twitter:description" content="10 фрактальных миров. Плоские и объёмные узоры с непрерывным приближением.">
+  <meta name="twitter:image" content="https://iamnhuman.github.io/fractal/preview.jpg">
+  <link rel="canonical" href="https://iamnhuman.github.io/fractal/">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+  <symbol id="play" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7Z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="pause" viewBox="0 0 24 24"><path d="M9 5v14M16 5v14" stroke-width="3"/></symbol>
+  <symbol id="shuffle" viewBox="0 0 24 24"><path d="M3 6h3c5 0 7 12 12 12h3m-4-4 4 4-4 4M3 18h3c2 0 3-2 4-4m4-4c1-2 2-4 4-4h3m-4-4 4 4-4 4"/></symbol>
+  <symbol id="reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 8M3 3v7h7"/></symbol>
+  <symbol id="download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 15v5h16v-5"/></symbol>
+  <symbol id="expand" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m8 0h5v-5"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+  <symbol id="video" viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 9 5-3v12l-5-3"/></symbol>
+  <symbol id="help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 8.5a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4M12 16v.5"/></symbol>
+</defs></svg>
+<header class="topbar">
+  <a href="./" class="brand" aria-label="Fractal Lab"><span class="brand-glyph" aria-hidden="true">✳</span><span>FRACTAL<span class="brand-divider">/</span><span class="brand-sub">LAB</span></span></a>
+  <div class="top-right"><span class="edition">EXPERIMENT № 001</span><button class="icon-button" id="helpButton" aria-label="Как пользоваться"><svg><use href="#help"/></svg></button></div>
+</header>
+<main class="workspace">
+  <aside class="sidebar">
+    <div class="intro"><div class="eyebrow"><span class="red-line"></span>GENERATIVE EXPLORER</div><h1>Бесконечно<br>глубже<span>.</span></h1><p>Выбери мир. Приближайся к деталям.<br>Собери свой маршрут.</p></div>
+    <section class="section scenes-section"><div class="section-heading"><h2>Отправная точка</h2><span class="mono">01 / 10</span></div><div id="scenes" class="scenes"></div></section>
+    <section class="section"><div class="section-heading"><h2>Геометрия</h2><span class="tiny-label">FORM</span></div>
+      <label class="sr-only" for="fractalType">Тип фрактала</label><select id="fractalType" class="geometry-select"></select><p id="geometryNote" class="geometry-note">Плоскость · орбитальные узоры</p>
+      <label class="slider-label" for="detail">Детализация<output id="detailValue">220</output></label><input id="detail" type="range" min="80" max="360" step="10" value="220">
+      <label class="slider-label" for="emblem">Овальные мотивы<output id="emblemValue">70%</output></label><input id="emblem" type="range" min="0" max="100" value="70">
+      <label class="slider-label" for="relief">Рельеф<output id="reliefValue">65%</output></label><input id="relief" type="range" min="0" max="100" value="65">
+    </section>
+    <section class="section palette-section"><div class="section-heading"><h2>Цветовая история</h2><span id="paletteName" class="tiny-label">SIGNATURE</span></div><div id="palettes" class="palettes" aria-label="Палитра"></div></section>
+    <section class="section movement-section"><div class="section-heading"><h2>Движение</h2><span class="tiny-label">MOTION</span></div>
+      <label class="slider-label" for="speed">Скорость полёта<output id="speedValue">1.0×</output></label><input id="speed" type="range" min="0.2" max="2.5" step="0.1" value="1">
+      <label class="toggle-label" for="rotate"><span>Вращение камеры</span><input id="rotate" type="checkbox" role="switch"><span class="switch"></span></label>
+    </section>
+    <button id="randomize" class="randomize"><svg><use href="#shuffle"/></svg>Новая вариация<span>↗</span></button>
+    <div class="sidebar-footer"><span class="mini-mark">無限</span><span>Бесконечность в деталях.</span><span class="version">v2.0</span></div>
+  </aside>
+  <section class="studio" aria-label="Редактор фрактала">
+    <div class="studio-heading"><div><span class="live-dot"></span><span id="renderStatus">LIVE RENDER</span><span class="heading-divider">/</span><span id="sceneName">01 — SIGNATURE</span></div><div class="format-control" id="formats" aria-label="Формат кадра"><button data-value="16:9" class="selected" aria-pressed="true">16:9</button><button data-value="9:16" aria-pressed="false">9:16</button><button data-value="1:1" aria-pressed="false">1:1</button></div></div>
+    <div class="viewport" id="viewport"><div class="canvas-wrap" id="canvasWrap">
+      <canvas id="fractal" aria-label="Интерактивный фрактал. Перетаскивай для перемещения, используй колесо для приближения."></canvas>
+      <div class="frame-top"><button id="fullscreen" class="frame-icon" aria-label="Полный экран"><svg><use href="#expand"/></svg></button></div>
+      <div class="canvas-error" id="canvasError" hidden><h2>Нужен WebGL</h2><p>Открой генератор в браузере с включённым аппаратным ускорением.</p></div>
+      <div class="recording-badge" id="recordingBadge" hidden><span></span><span id="recordingTime">00:00 / 00:10</span></div>
+    </div></div>
+    <div class="transport"><div class="transport-left"><button id="playButton" class="play-button" aria-label="Запустить полёт"><svg><use href="#play"/></svg><span>Начать полёт</span></button><button id="resetButton" class="icon-button" aria-label="Вернуться к исходному виду"><svg><use href="#reset"/></svg></button><div class="transport-divider"></div><span class="zoom-readout">ZOOM <strong id="zoomValue">1.00×</strong></span></div><div class="zoom-buttons"><button id="zoomOut" class="icon-button" aria-label="Отдалить"><svg><use href="#minus"/></svg></button><button id="zoomIn" class="icon-button" aria-label="Приблизить"><svg><use href="#plus"/></svg></button></div></div>
+    <div class="studio-bottom"><p class="interaction-hint"><span>↔</span>Перетаскивай для навигации<span class="hint-dot">·</span>Прокручивай для приближения</p><div class="export-actions"><button id="pngButton" class="export-button"><svg><use href="#download"/></svg>Сохранить PNG<span>4K</span></button><button id="videoButton" class="export-button primary"><svg><use href="#video"/></svg><span id="videoLabel">Записать видео</span><span class="export-duration">10 сек</span></button></div></div>
+    <footer class="studio-footer"><span>PROCEDURAL WORLDS / REAL-TIME RENDER</span><span>Независимый арт-инструмент<span class="footer-plus">+</span></span></footer>
+  </section>
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<dialog id="helpDialog"><div class="dialog-header"><h2>Исследуй бесконечность</h2><button id="closeHelp" class="icon-button" aria-label="Закрыть">×</button></div><p>Десять процедурных миров на основе разных фрактальных формул. Два из них объёмные: Mandelbulb и губка Менгера со светом, рельефом и перспективой. Переплетения трёх овалов вплетены в сам узор.</p><dl><dt>Перетаскивание / один палец</dt><dd>Перемещение по фракталу</dd><dt>Колесо / два пальца</dt><dd>Приближение к выбранной точке</dd><dt>Двойной клик</dt><dd>Приближение к курсору</dd><dt>Пробел</dt><dd>Запуск и пауза полёта</dd><dt>R / F</dt><dd>Сброс камеры / полный экран</dd></dl><p>PNG сохраняется в 4K. Видео — 10 секунд, до 1080p, без надписей интерфейса. Формат файла зависит от браузера: WebM или MP4. Во время записи камера летит автоматически.</p><p class="dialog-note">При приближении плавно раскрываются вложенные процедурные уровни. Координаты хранятся иерархически, поэтому полёт не сбрасывается к началу. Это художественная многоуровневая композиция на основе фракталов.</p></dialog>
+<script type="module" src="app.js"></script>
+</body></html>

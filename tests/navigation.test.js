@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {InfiniteCamera} from '../dist/navigation.js';
+import {SCENES,GEOMETRIES} from '../dist/engine.js';
+const near=(a,b,tolerance=1e-8)=>assert.ok(Math.abs(a-b)<tolerance,`${a} != ${b}`);
+const wrap=x=>((x%4)+4)%4;
+test('10 presets use 10 different formulas, including two volumes',()=>{assert.equal(SCENES.length,10);assert.equal(new Set(SCENES.map(s=>s.type)).size,10);assert.equal(GEOMETRIES.length,10);assert.equal(SCENES.filter(s=>s.type>=8).length,2);});
+test('deep zoom does not stop, underflow, or reset after 10^1000',()=>{const c=new InfiniteCamera([-.743,.12],.5);for(let i=0;i<12000;i++){const before=c.logZoom;c.zoom(.7,[.3,-.2]);assert.ok(c.logZoom>before);assert.ok(c.scale>=1/16&&c.scale<1);assert.ok(c.center.every(x=>x>=0&&x<1));}assert.ok(c.logZoom/Math.LN10>1000);assert.ok(c.level>1000);assert.ok(!c.zoomLabel.includes('Infinity'));assert.ok(c.layers().coarse.origin.every(Number.isFinite));});
+test('level rebasing preserves the same coordinates on both sides',()=>{const c=new InfiniteCamera([-.743,.12],.06250000001,.23),anchor=[.4,-.3],target=1;const before=c.sample(target),offset=c.offset(...anchor);c.zoom(.999999999);const after=c.sample(target);near(after.scale,before.scale*.999999999);const co=Math.cos(c.angle),si=Math.sin(c.angle);for(let a=0;a<2;a++){const d=a===0?co*anchor[0]+si*anchor[1]:-si*anchor[0]+co*anchor[1];near(wrap(before.origin[a]+d*before.scale),wrap(after.origin[a]+d*after.scale));}assert.equal(c.level,1);});
+test('zooming out returns to the initial location, including negative cells',()=>{const c=new InfiniteCamera([-1.743,.12],.5,.31),initial=c.sample(0);for(let i=0;i<90;i++)c.zoom(.7,[.4,-.3]);for(let i=0;i<90;i++)c.zoom(1/.7,[.4,-.3]);const final=c.sample(0);near(final.scale,initial.scale);near(final.origin[0],initial.origin[0]);near(final.origin[1],initial.origin[1]);});
+test('transition layers keep their origins across a level boundary',()=>{const c=new InfiniteCamera([-.2,.3],.062500001);const a=c.layers();c.zoom(.99999995);const b=c.layers();assert.equal(a.fine.level,b.coarse.level);near(a.fine.origin[0],b.coarse.origin[0]);assert.ok(a.blend>.999);assert.ok(b.blend<.001);});
