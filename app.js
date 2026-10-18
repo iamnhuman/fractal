@@ -1,5 +1,6 @@
-import {FractalRenderer, PALETTES, SCENES, GEOMETRIES} from './engine.js';
-import {InfiniteCamera} from './navigation.js';
+import {FractalRenderer, PALETTES, SCENES, GEOMETRIES} from './engine.js?v=3';
+import {InfiniteCamera} from './navigation.js?v=3';
+import {dynamics} from './fractal-math.js?v=3';
 
 const $=id=>document.getElementById(id);
 const canvas=$('fractal');
@@ -12,13 +13,13 @@ function toast(message){$('toast').textContent=message;$('toast').classList.add(
 function segmented(id,value){document.querySelectorAll('#'+id+' button').forEach(b=>{const on=b.dataset.value===String(value);b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on));});}
 function syncSliders(){for(const id of ['detail','emblem','relief','speed']){const input=$(id);input.value=settings[id];input.style.setProperty('--fill',((input.value-input.min)/(input.max-input.min)*100)+'%');$(id+'Value').textContent=id==='detail'?settings[id]:id==='speed'?settings[id].toFixed(1)+'×':settings[id]+'%';} $('rotate').checked=settings.rotate;}
 function syncPalette(){document.querySelectorAll('.palette').forEach((b,i)=>{b.classList.toggle('selected',i===settings.palette);b.setAttribute('aria-pressed',String(i===settings.palette));});$('paletteName').textContent=PALETTES[settings.palette].name;}
-function syncScene(){document.querySelectorAll('.scene').forEach((b,i)=>{b.classList.toggle('selected',i===sceneIndex);b.setAttribute('aria-pressed',String(i===sceneIndex));});const s=SCENES[sceneIndex];$('sceneName').textContent=String(sceneIndex+1).padStart(2,'0')+' — '+s.name.toUpperCase();document.querySelector('.scenes-section .mono').textContent=String(sceneIndex+1).padStart(2,'0')+' / '+SCENES.length;const threeD=settings.type>=8;$('geometryNote').textContent=threeD?'Объём · свет и перспектива':'Плоскость · орбитальные узоры';}
+function syncScene(){document.querySelectorAll('.scene').forEach((b,i)=>{b.classList.toggle('selected',i===sceneIndex);b.setAttribute('aria-pressed',String(i===sceneIndex));});const s=SCENES[sceneIndex];$('sceneName').textContent=String(sceneIndex+1).padStart(2,'0')+' — '+s.name.toUpperCase();document.querySelector('.scenes-section .mono').textContent=String(sceneIndex+1).padStart(2,'0')+' / '+SCENES.length;const threeD=settings.type>=8;$('geometryNote').textContent=threeD?'Объём · свет и перспектива':'Julia · самоподобные ветви';}
 function syncPlay(){const b=$('playButton');b.classList.toggle('playing',playing);b.querySelector('use').setAttribute('href',playing?'#pause':'#play');b.querySelector('span').textContent=playing?'Пауза':'Начать полёт';b.setAttribute('aria-label',playing?'Остановить полёт':'Запустить полёт');b.setAttribute('aria-pressed',String(playing));}
 function setPlaying(value){playing=value;syncPlay();dirty=true;}
-function resetCamera(){const s=SCENES[sceneIndex];camera.reset(s.center,s.scale,s.angle);dirty=true;}
+function resetCamera(){const s=SCENES[sceneIndex];camera.reset(s.center,s.scale,s.angle,dynamics(settings.type,settings.c));dirty=true;}
 function selectScene(index){sceneIndex=index;const s=SCENES[index];Object.assign(settings,{palette:s.palette,c:[...s.c],type:s.type,emblem:s.emblem,phase:0});resetCamera();syncScene();syncPalette();syncSliders();$('fractalType').value=String(settings.type);resize();}
 function makeUI(){
-  SCENES.forEach((s,i)=>{const b=document.createElement('button');b.className='scene';b.title=s.description;b.innerHTML=`<img src="previews/${String(i+1).padStart(2,'0')}.jpg" alt="Фрактал ${s.name}" width="256" height="144"><span class="scene-info"><strong>${s.name.toUpperCase()}</strong><span>${s.type>=8?'3D':String(i+1).padStart(2,'0')}</span></span>`;b.addEventListener('click',()=>selectScene(i));$('scenes').append(b);});
+  SCENES.forEach((s,i)=>{const b=document.createElement('button');b.className='scene';b.title=s.description;b.innerHTML=`<img src="previews/${String(i+1).padStart(2,'0')}.jpg?v=3" alt="Фрактал ${s.name}" width="256" height="144"><span class="scene-info"><strong>${s.name.toUpperCase()}</strong><span>${s.type>=8?'3D':String(i+1).padStart(2,'0')}</span></span>`;b.addEventListener('click',()=>selectScene(i));$('scenes').append(b);});
   PALETTES.forEach((p,i)=>{const b=document.createElement('button');b.className='palette';b.title=p.name;b.setAttribute('aria-label','Палитра '+p.name);p.swatches.forEach(c=>{const sw=document.createElement('i');sw.style.background=c;b.append(sw);});b.addEventListener('click',()=>{settings.palette=i;syncPalette();dirty=true;});$('palettes').append(b);});
   GEOMETRIES.forEach((name,i)=>{const option=document.createElement('option');option.value=i;option.textContent=name;$('fractalType').append(option);});
   syncScene();syncPalette();syncSliders();syncPlay();
@@ -33,8 +34,7 @@ function animate(time){
   requestAnimationFrame(animate);if(!renderAvailable||document.hidden){lastTime=time;return;}
   const dt=Math.min((time-lastTime)/1000,.06);lastTime=time;
   if(playing){
-    camera.zoom(Math.exp(-dt*.22*settings.speed));
-    const drift=camera.offset(Math.sin(camera.logZoom*.21)*dt*.035*settings.speed,Math.cos(camera.logZoom*.17)*dt*.025*settings.speed);camera.pan(...drift);
+    camera.fly(dt,settings.speed);
     if(settings.rotate)camera.angle+=dt*.035*settings.speed;
     dirty=true;
   }
@@ -46,7 +46,7 @@ canvas.addEventListener('pointerdown',e=>{if(recording)return;canvas.setPointerC
 canvas.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,[e.clientX,e.clientY]);if(pointers.size===2&&pinch){const p=[...pointers.values()],distance=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]);zoomAt(pinch.distance/Math.max(1,distance),(p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2);pinch.distance=distance;}else if(drag&&pointers.size===1){const r=canvas.getBoundingClientRect(),delta=camera.offset((drag[0]-e.clientX)/r.height*2,(e.clientY-drag[1])/r.height*2);camera.pan(...delta);drag=[e.clientX,e.clientY];dirty=true;}});
 function endPointer(e){pointers.delete(e.pointerId);drag=null;pinch=null;}
 canvas.addEventListener('pointerup',endPointer);canvas.addEventListener('pointercancel',endPointer);canvas.addEventListener('lostpointercapture',endPointer);
-canvas.addEventListener('wheel',e=>{e.preventDefault();zoomAt(Math.exp(Math.max(-150,Math.min(150,e.deltaY))*.0015),e.clientX,e.clientY);},{passive:false});
+canvas.addEventListener('wheel',e=>{e.preventDefault();setPlaying(false);zoomAt(Math.exp(Math.max(-150,Math.min(150,e.deltaY))*.0015),e.clientX,e.clientY);},{passive:false});
 canvas.addEventListener('dblclick',e=>zoomAt(.5,e.clientX,e.clientY));
 
 for(const id of ['detail','emblem','relief','speed'])$(id).addEventListener('input',e=>{settings[id]=Number(e.target.value);syncSliders();dirty=true;});
@@ -54,7 +54,7 @@ $('rotate').addEventListener('change',e=>settings.rotate=e.target.checked);
 $('fractalType').addEventListener('change',e=>{const type=Number(e.target.value);selectScene(SCENES.findIndex(s=>s.type===type));});
 document.querySelectorAll('#formats button').forEach(b=>b.addEventListener('click',()=>{if(recording)return;format=b.dataset.value;segmented('formats',format);$('canvasWrap').classList.toggle('portrait',format==='9:16');$('canvasWrap').classList.toggle('square',format==='1:1');resize();dirty=true;}));
 $('playButton').addEventListener('click',()=>setPlaying(!playing));$('resetButton').addEventListener('click',resetCamera);$('zoomIn').addEventListener('click',()=>zoomCenter(.7));$('zoomOut').addEventListener('click',()=>zoomCenter(1.4));
-$('randomize').addEventListener('click',()=>{const index=Math.floor(Math.random()*SCENES.length);selectScene(index);settings.c[0]+=(Math.random()-.5)*.025;settings.c[1]+=(Math.random()-.5)*.025;settings.phase=Math.random();camera.angle=Math.random()*Math.PI*2;dirty=true;toast('Новая вариация готова');});
+$('randomize').addEventListener('click',()=>{const index=Math.floor(Math.random()*SCENES.length);selectScene(index);settings.c[0]+=(Math.random()-.5)*.025;settings.c[1]+=(Math.random()-.5)*.025;settings.phase=Math.random();resetCamera();camera.angle=Math.random()*Math.PI*2;dirty=true;toast('Новая вариация готова');});
 async function fullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else if($('canvasWrap').requestFullscreen)await $('canvasWrap').requestFullscreen();else toast('Полный экран недоступен в этом браузере');}catch{toast('Браузер не разрешил полный экран');}}
 $('fullscreen').addEventListener('click',fullscreen);
 $('helpButton').addEventListener('click',()=>$('helpDialog').showModal());$('closeHelp').addEventListener('click',()=>$('helpDialog').close());$('helpDialog').addEventListener('click',e=>{if(e.target===$('helpDialog')){const r=$('helpDialog').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('helpDialog').close();}});

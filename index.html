@@ -17,7 +17,7 @@
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Цветные спирали, объёмная фрактальная планета и золотой лабиринт Fractal Lab">
+  <meta property="og:image:alt" content="Самоподобные спирали, объёмная фрактальная решётка и золотой лабиринт Fractal Lab">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Fractal Lab — бесконечно глубже">
   <meta name="twitter:description" content="10 фрактальных миров. Плоские и объёмные узоры с непрерывным приближением.">
@@ -49,7 +49,7 @@
     <div class="intro"><div class="eyebrow"><span class="red-line"></span>GENERATIVE EXPLORER</div><h1>Бесконечно<br>глубже<span>.</span></h1><p>Выбери мир. Приближайся к деталям.<br>Собери свой маршрут.</p></div>
     <section class="section scenes-section"><div class="section-heading"><h2>Отправная точка</h2><span class="mono">01 / 10</span></div><div id="scenes" class="scenes"></div></section>
     <section class="section"><div class="section-heading"><h2>Геометрия</h2><span class="tiny-label">FORM</span></div>
-      <label class="sr-only" for="fractalType">Тип фрактала</label><select id="fractalType" class="geometry-select"></select><p id="geometryNote" class="geometry-note">Плоскость · орбитальные узоры</p>
+      <label class="sr-only" for="fractalType">Тип фрактала</label><select id="fractalType" class="geometry-select"></select><p id="geometryNote" class="geometry-note">Julia · самоподобные ветви</p>
       <label class="slider-label" for="detail">Детализация<output id="detailValue">220</output></label><input id="detail" type="range" min="80" max="360" step="10" value="220">
       <label class="slider-label" for="emblem">Овальные мотивы<output id="emblemValue">70%</output></label><input id="emblem" type="range" min="0" max="100" value="70">
       <label class="slider-label" for="relief">Рельеф<output id="reliefValue">65%</output></label><input id="relief" type="range" min="0" max="100" value="65">
@@ -76,6 +76,6 @@
   </section>
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<dialog id="helpDialog"><div class="dialog-header"><h2>Исследуй бесконечность</h2><button id="closeHelp" class="icon-button" aria-label="Закрыть">×</button></div><p>Десять процедурных миров на основе разных фрактальных формул. Два из них объёмные: Mandelbulb и губка Менгера со светом, рельефом и перспективой. Переплетения трёх овалов вплетены в сам узор.</p><dl><dt>Перетаскивание / один палец</dt><dd>Перемещение по фракталу</dd><dt>Колесо / два пальца</dt><dd>Приближение к выбранной точке</dd><dt>Двойной клик</dt><dd>Приближение к курсору</dd><dt>Пробел</dt><dd>Запуск и пауза полёта</dd><dt>R / F</dt><dd>Сброс камеры / полный экран</dd></dl><p>PNG сохраняется в 4K. Видео — 10 секунд, до 1080p, без надписей интерфейса. Формат файла зависит от браузера: WebM или MP4. Во время записи камера летит автоматически.</p><p class="dialog-note">При приближении плавно раскрываются вложенные процедурные уровни. Координаты хранятся иерархически, поэтому полёт не сбрасывается к началу. Это художественная многоуровневая композиция на основе фракталов.</p></dialog>
-<script type="module" src="app.js"></script>
+<dialog id="helpDialog"><div class="dialog-header"><h2>Исследуй бесконечность</h2><button id="closeHelp" class="icon-button" aria-label="Закрыть">×</button></div><p>Восемь множеств Julia с разным ветвлением и два объёмных фрактала — Вичека и Менгера. Переплетения трёх овалов вплетены в окраску узора.</p><dl><dt>Перетаскивание / один палец</dt><dd>Перемещение по фракталу</dd><dt>Колесо / два пальца</dt><dd>Приближение к выбранной точке</dd><dt>Двойной клик</dt><dd>Приближение к курсору</dd><dt>Пробел</dt><dd>Запуск и пауза полёта</dd><dt>R / F</dt><dd>Сброс камеры / полный экран</dd></dl><p>PNG сохраняется в 4K. Видео — 10 секунд, до 1080p, без надписей интерфейса. Формат файла зависит от браузера: WebM или MP4. Во время записи камера летит автоматически.</p><p class="dialog-note">Полёт приближается к точке самоподобия: внутри уже видимых ветвей повторяется тот же фрактал. Перетаскивание и колесо останавливают полёт для ручного исследования.</p></dialog>
+<script type="module" src="app.js?v=3"></script>
 </body></html>
